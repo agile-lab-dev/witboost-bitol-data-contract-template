@@ -1,0 +1,3 @@
+readonly:
+  __system__: ${{ parameters.dataproduct }}
+  __version__: '${{ parameters.identifier.split(".")[2] }}.0.0'

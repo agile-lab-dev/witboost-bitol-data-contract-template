@@ -1,0 +1,212 @@
+%SKELETON
+{% macro authoritativeDefinitions(field) %}
+{% if field | length > 0 %}
+authoritativeDefinitions: {% for item in field %}
+- url: ${{ item.urlAuthoritative | dump }}
+  type: ${{ item.typeAuthoritative | dump }}
+{% endfor %}
+{% endif %}
+{% endmacro %}
+
+{# {% macro customProperty(field) %}
+{% if field | length > 0 %}
+customProperties: {% for item in field %}
+- property: ${{ item.customProperty | dump }}
+  value: ${{ item.customValue | dump }}
+{% endfor %}
+{% endif %}
+{% endmacro %} #}
+
+{% macro quality(field) %}
+{% for quality in field %}
+- rule: ${{ quality.nameQuality | dump }}
+  type: ${{ quality.typeQuality | dump }}
+  description: ${{ quality.descriptionQuality | dump }}
+  dimension: ${{ quality.dimension | dump }}
+  severity: ${{ quality.severity | dump }}
+  businessImpact: ${{ quality.businessImpact | dump }}
+  {# custom properties #}
+  {# ${{ customProperty(quality.qualityCustomProperties) | indent(18, true)}} #}
+  tags: {% if quality.qualityTags | length > 0 %}${{ quality.qualityTags | dump }}{% else %}[]{% endif %}
+  authoritativeDefinitions: {% for item in quality.authoritativeDefinitionsQuality %}
+  - url: ${{ item.urlAuthoritative | dump }}
+    type: ${{ item.typeAuthoritative | dump }}
+  {% endfor %}
+  scheduler: ${{ quality.scheduler | dump }}
+  schedule: ${{ quality.schedule | dump }}
+  {% if quality.typeQuality == "sql" %}
+  query: ${{ quality.query | dump }}
+  operator: ${{ quality.operator | dump }}
+  {% endif %}
+  {% if quality.typeQuality == "custom" %}
+  engine: ${{ quality.propertyType.engine | dump }}
+  {% if quality.propertyType.engine == "great expectations" %}
+  {% set array_exp = quality.propertyType.greatExpectations.expectationsSuite %}
+  implementation: | {% for item in array_exp %}
+    - expectation_type: ${{ item.expectation_type }}
+      column: ${{ item.column -}}
+      {% if item.min_value is defined %}min_value: ${{ item.min_value }}
+      {% endif -%}{% if item.max_value is defined %}max_value: ${{ item.max_value }}
+      {% endif -%}{% if item.strict_min is defined %}strict_min: ${{ item.strict_min }}
+      {% endif -%}{% if item.strict_max is defined %}strict_max: ${{ item.strict_max }}
+      {% endif -%}{% if item.value_set is defined %}value_set: ${{ item.value_set }}
+      {% endif -%}{% if item.regex is defined %}regex: ${{ item.regex }}{% endif -%}
+    {% endfor %}
+  {% endif %}
+  {% endif %}
+{% endfor %}
+{% endmacro %}
+
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ${{ values.identifier }}
+  version: ${{ values.identifier.split(".")[2] + ".0.0" }}
+  description: ${{ values.description | dump }}
+  tags: [data-contract, bitol, outputport]
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+spec:
+  type: outputport
+  lifecycle: experimental
+  owner: ${{ values.owner | dump }}
+  system: ${{ values.dataproduct | dump }}
+  domain: ${{ values.domain | dump }}
+  name: ${{ values.name | dump }}
+  description: ${{ values.description | dump }}
+  mesh:
+    name: ${{ values.name | dump }}
+    description: ${{ values.description | dump }}
+    kind: outputport
+    infrastructureTemplateId: urn:dmb:itm:data-contract-bitol-tech-adapter:1
+    useCaseTemplateId: ${{ values.useCaseTemplateId }}
+    __dataContractEnabled: true
+    dependsOn: {% if values.dependsOn | length > 0 %}{% for i in values.dependsOn %}
+      - ${{ i }}{% endfor %}{% else %}[]{% endif %}
+    specific: {}
+    dataContract:
+      domain: ${{ values.domain | dump }}
+      dataProduct: ${{ values.dataproduct | dump }}
+      name: ${{ values.nameDC | dump }}
+      description:
+        purpose: ${{ values.purpose | dump }}
+        limitation: ${{ values.limitation | dump }}
+        usage: ${{ values.usage | dump }}
+        ${{ authoritativeDefinitions(values.authoritativeDefinitionsDescription) | indent(8, true)}}
+        {# custom properties #}
+        {# ${{ customProperty(values.descriptionCustomProperties) | indent(8, true)}} #}
+      tenant: ${{ values.tenant | dump }}
+      tags: {% if values.tags | length > 0 %}${{ values.tags | dump }}{% else %}[]{% endif %}
+      kind: DataContract
+      {% if values.status == "other" %}
+      status: ${{ values.otherStatus | dump }}
+      {% else %}
+      status: ${{ values.status | dump }}
+      {% endif %}
+      ${{ authoritativeDefinitions(values.authoritativeDefinitions) | indent(6, true)}}
+      schema:
+      {% for schema in values.schemas.elements %}
+        - name: ${{ schema.elementName | dump }}
+          logicalType: object
+          description: ${{ schema.elementDescription | dump }}
+          businessName: ${{ schema.businessName | dump }}
+          ${{ authoritativeDefinitions(schema.authoritativeDefinitionsSchema) | indent(10, true)}}
+          tags: {% if values.schemaTags | length > 0 %}${{ values.schemaTags | dump }}{% else %}[]{% endif %}
+          dataGranularityDescription: ${{ schema.dataGranularityDescription | dump }}
+          maxProperties: ${{ schema.maxProperties | dump }}
+          minProperties: ${{ schema.minProperties | dump }}
+          required: ${{ schema.requiredField | dump }}
+          properties: {% for property in schema.schemaProperties %}
+            - name: ${{ property.elementName | dump }}
+              description: ${{ property.elementDescription | dump }}
+              businessName: ${{ property.businessName | dump }}
+              logicalType: ${{ property.logicalType | dump }}
+              ${{ authoritativeDefinitions(property.authoritativeDefinitionsSchema) | indent(14, true)}}
+              tags: {% if property.schemaTags | length > 0 %}${{ property.schemaTags | dump }}{% else %}[]{% endif %}
+              dataGranularityDescription: ${{ property.dataGranularityDescription | dump }}
+              primaryKey: ${{ property.primaryKey | dump }}
+              {% if property.primaryKey %}
+              primaryKeyPosition: ${{ property.primaryKeyPosition | dump }}
+              {% endif %}
+              requiredProperty: ${{ property.requiredProperty | dump }}
+              unique: ${{ property.unique | dump }}
+              classification: ${{ property.classification | dump }}
+              encryptedName: ${{ property.encryptedName | dump }}
+              transformSourceObject: {% for source in property.transformSourceObject %}
+                - ${{ source | dump }}
+              {% endfor %}
+              examples: {% for example in property.examples %}
+                - ${{ example | dump }}
+              {% endfor %}
+              criticalDataElement: ${{ property.criticalDataElement | dump }}
+              {# {% if property.logicalTypeOptions == "array" %}
+              maxItems: ${{ property.maxItems | dump }}
+              minItems: ${{ property.minItems | dump }}
+              uniqueItems: ${{ property.uniqueItems | dump }}
+              items: TODO
+              {% endif %} #}
+              {% if property.logicalTypeOptions == "date" %}
+              dataFormat: ${{ property.dataFormat | dump }}
+              dataRanges: ${{ property.dataRanges | dump }}
+              {% endif %}
+              {% if property.logicalTypeOptions == "number" or property.logicalTypeOptions == "integer" %}
+              numberFormat: ${{ property.numberFormat | dump }}
+              numberRanges: ${{ property.numberRanges | dump }}
+              multipleOf: ${{ property.multipleOf | dump }}
+              {% endif %}
+              {# {% if property.logicalTypeOptions == "object" %}
+              maxProperties: ${{ property.maxProperties | dump }}
+              minProperties: ${{ property.minProperties | dump }}
+              required: ${{ property.required | dump }}
+              TODO
+              {% endif %} #}
+              {% if property.logicalTypeOptions == "string" %}
+              stringFormat: ${{ property.stringFormat | dump }}
+              stringPatterns: ${{ property.stringPatterns | dump }}
+              maxLength: ${{ property.maxLength | dump }}
+              minLength: ${{ property.minLength | dump }}
+              {% endif %}
+              {# custom properties #}
+              {# ${{ customProperty(property.columnCustomProperties) | indent(14, true)}} #}
+              quality: {% for qualityInfo in values.qualitiesInfo %}
+              {% if qualityInfo.nameColumn == property.elementName and qualityInfo.nameTable.label == schema.elementName %}
+              ${{ quality(qualityInfo.objQualities.qualities) | indent(16, true)}}
+              {% endif %} {% endfor%} {# qualities #}
+            {% endfor %} {# properties #}
+          quality: {% for qualityInfo in values.qualitiesInfo %}
+          {% if not qualityInfo.nameColumn and qualityInfo.nameTable.label == schema.elementName %}
+          ${{ quality(qualityInfo.objQualities.qualities) | indent(12, true)}}
+          {% endif %} {% endfor %} {# qualities #}
+      {% endfor %} {# schema #}
+      support: {% for support in values.supports %}
+        - channel: ${{ support.channel | dump }}
+          url: ${{ support.urlChannel | dump }}
+          description: ${{ support.descriptionChannel | dump }}
+          scope: ${{ support.scope | dump }}
+          invitationUrl: ${{ support.invitationUrl | dump }}
+          {% if support.tools == "other" %}
+          tools: ${{ support.otherTools | dump }}
+          {% else %}
+          tools: ${{ support.tools | dump }}
+          {% endif %}
+      price:
+        priceAmount: ${{ parameters.priceAmount | dump}}
+        priceCurrency: ${{ parameters.priceCurrency | dump}}
+        priceUnit: ${{ parameters.priceUnit | dump}}
+      slaDefaultElement: ${{ parameters.slaDefaultElement | dump}}
+      slaProperties: {% for SLSproperty in values.propertiesSLA %}
+        - property: ${{ SLSproperty.name | dump }}
+          value: ${{ SLSproperty.valueSLA | dump }}
+          valueExt: ${{ SLSproperty.valueExt | dump }}
+          unit: ${{ SLSproperty.unitSLA | dump }}
+          element: ${{ SLSproperty.elementSLA | dump }}
+          driver: ${{ SLSproperty.driverSLA | dump }}
+      {% endfor %}
+      {% if values.otherCustomProperties | length > 0 %}
+      customProperties: {% for item in values.otherCustomProperties %}
+        - property: ${{ item.customProperty | dump }}
+          value: ${{ item.customValue | dump }}
+      {% endfor %}
+      {% endif %}
+      contractCreatedTs: ${{ values.contractCreatedTs | dump }}
+      {% endfor %}

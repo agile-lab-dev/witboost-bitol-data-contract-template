@@ -1,0 +1,1128 @@
+apiVersion: scaffolder.backstage.io/v1beta3
+kind: Template
+metadata:
+  name: bitol-datacontract-template.1
+  title: BITOL Data Contract Template
+  description: Create a repository containing the definition of a BITOL Data Contract
+  annotations:
+    backstage.io/techdocs-ref: dir:.
+  mesh:
+    icon: https://avatars.githubusercontent.com/u/146860380?s=280&v=4
+  tags:
+    - data-contract
+    - bitol
+    - outputport
+spec:
+  generates: componenttype:default/outputport
+  owner: agilelab
+  type: outputport
+  parameters:
+    - title: BITOL Data Contract Output Port
+      description: General information about the BITOL Data Contract Output Port
+      type: object
+      required:
+        - name
+        - domain
+        - description
+        - dataproduct
+      properties:
+        name:
+          title: Name
+          type: string
+          description: Required name used for display purposes
+          ui:field: EntityNamePicker
+          default: BITOL Output Port
+          ui:options:
+            allowArbitraryValues: true
+        description:
+          title: Description
+          type: string
+          description: Description of the Output Port
+          ui:field: TextField
+        domain:
+          title: Domain
+          type: string
+          description: Domain of the Data Product this Output Port belongs to
+          ui:field: EntityPicker
+          ui:options:
+            allowArbitraryValues: false
+            allowedKinds:
+              - Domain
+        dataproduct:
+          title: Data Product
+          type: string
+          description: Data Product this Output Port belongs to
+          ui:field: EntityPicker
+          ui:filter:
+            - fieldName: domain
+              entityPath: spec.domain
+          ui:options:
+            allowArbitraryValues: false
+            allowedKinds:
+              - System
+        identifier:
+          title: Identifier
+          type: string
+          description: A unique identifier for the entity inside the domain. It will not be editable after creation and is expected to be a string that is sequences of [a-zA-Z] separated by any of [-_]
+          ui:field: ComponentIdentifierPicker
+          ui:options:
+            allowArbitraryValues: false
+        owner:
+          title: Component Owner
+          type: string
+          description: Automatically selected from the Data Product metadata. Data Product owner.
+          ui:field: EntitySelectionPicker
+          ui:fieldName: dataproduct
+          ui:property: spec.owner
+          ui:options:
+            allowArbitraryValues: false
+        dependsOn:
+          title: Depends on
+          type: array
+          default: []
+          items:
+            type: string
+            ui:field: EntityComponentsPicker
+            ui:fieldName: dataproduct
+            ui:options:
+              allowArbitraryValues: false
+
+    - title: BITOL Data Contract
+      required:
+        - nameDC
+        - status
+      properties:
+        nameDC:
+          title: Name
+          type: string
+          description: Required name used for display purposes
+          ui:field: EntityNamePicker
+          default: BITOL Data Contract
+          ui:options:
+            allowArbitraryValues: true
+        status:
+          title: Status
+          type: string
+          description: Current status of the data contract.
+          enum:
+            - active
+            - proposed
+            - draft
+            - deprecated
+            - retired
+            - other
+          default: null
+        authoritativeDefinitions:
+          title: Authoritative Definitions
+          description: List of links to authoritative definitions for the data.
+          type: array
+          default: []
+          items:
+            type: object
+            ui:options:
+              displayTitle: false
+            required:
+              - urlAuthoritative
+              - typeAuthoritative
+            properties:
+              urlAuthoritative:
+                title: URL
+                description: Link to the authoritative definition.
+                type: string
+                ui:field: UrlPicker
+              typeAuthoritative:
+                title: Type
+                description: Type of the authoritative definition.
+                type: string
+        descriptionDC:
+          title: Description
+          description: Object containing the descriptions of the Data Contract.
+          type: object
+          ui:options:
+            elementsPerRow: 8
+          properties:
+            purpose:
+              title: Purpose
+              type: string
+              description: Intended purpose for the provided data.
+            limitation:
+              title: Limitation
+              type: string
+              description: Technical, compliance, and legal limitations for data use.
+            usage:
+              title: Usage
+              type: string
+              description: Recommended usage of the data.
+            authoritativeDefinitionsDesc:
+              title: Authoritative Definitions
+              description: List of links to authoritative definitions for the data.
+              type: array
+              default: []
+              items:
+                type: object
+                ui:options:
+                  displayTitle: false
+                required:
+                  - urlAuthoritative
+                  - typeAuthoritative
+                properties:
+                  urlAuthoritative:
+                    title: URL
+                    description: Link to the authoritative definition.
+                    type: string
+                    ui:field: UrlPicker
+                  typeAuthoritative:
+                    title: Type
+                    description: Type of the authoritative definition.
+                    type: string
+            # descriptionCustomProperties:
+            #   title: Custom Properties
+            #   type: array
+            #   description: Custom properties that are not part of the standard.
+            #   default: []
+            #   items:
+            #     type: object
+            #     ui:options:
+            #       displayTitle: false
+            #     properties:
+            #       customProperty:
+            #         title: Property
+            #         type: string
+            #         description: The name of the key. Names should be in camel case the same as if they were permanent properties in the contract.
+            #       customValue:
+            #         title: Value
+            #         type: string
+            #         description: The value of the key.
+        tenant:
+          title: Tenant
+          type: string
+          description: Indicates the property the data is primarily associated with.
+        tags:
+          title: Tags
+          description: Tags for the data contract
+          type: array
+          default: []
+          items:
+            type: string
+
+      if:
+        properties:
+          status:
+            const: other
+      then:
+        required:
+          - otherStatus
+        properties:
+          otherStatus:
+            title: Other Status
+            type: string
+            description: Specify the name of the status.
+      else:
+        properties: {}
+
+      ui:order:
+        - nameDC
+        - status
+        - otherStatus
+        - tenant
+        - authoritativeDefinitions
+        - tags
+        - descriptionDC
+
+    - title: Schema
+      description: Schema definition for BITOL data contracts
+      type: object
+      properties:
+        tables:
+          type: object
+          ui:options:
+            displayTitle: false
+          properties:
+            elements:
+              title: Table
+              type: array
+              default: []
+              items:
+                type: object
+                ui:options:
+                  displayTitle: false
+                allOf:
+                  - $ref: "#/definitions/element"
+                  - properties:
+                      maxProperties:
+                        title: Max Properties
+                        type: integer
+                        description: Specifies the maximum number of columns allowed in the table.
+                      minProperties:
+                        title: Min Properties
+                        type: integer
+                        description: Specifies the minimum number of columns allowed in the table.
+                      requiredField:
+                        title: Required
+                        type: array
+                        description: Column names that are required to exist in the table.
+                        default: []
+                        items:
+                          type: string
+                      schemaProperties:
+                        title: Column
+                        type: array
+                        description: Property definitions for the schema
+                        default: []
+                        items:
+                          type: object
+                          ui:options:
+                            displayTitle: false
+                          $ref: "#/definitions/property"
+                      # tableCustomProperties:
+                      #   title: Custom Properties
+                      #   type: array
+                      #   description: Custom properties that are not part of the standard.
+                      #   default: []
+                      #   items:
+                      #     type: object
+                      #     ui:options:
+                      #       displayTitle: false
+                      #     properties:
+                      #       customProperty:
+                      #         title: Property
+                      #         type: string
+                      #         description: The name of the key. Names should be in camel case the same as if they were permanent properties in the contract.
+                      #       customValue:
+                      #         title: Value
+                      #         type: string
+                      #         description: The value of the key.
+
+      definitions:
+        element:
+          type: object
+          required:
+            - elementName
+          properties:
+            elementName:
+              title: Name
+              type: string
+              description: The name of the element
+            elementDescription:
+              title: Description
+              type: string
+              description: A description of the element.
+            businessName:
+              title: Business Name
+              type: string
+              description: The business name of the element
+            authoritativeDefinitionsSchema:
+              title: Authoritative Definitions
+              description: List of links to authoritative definitions for the data.
+              type: array
+              default: []
+              items:
+                type: object
+                ui:options:
+                  displayTitle: false
+                required:
+                  - urlAuthoritative
+                  - typeAuthoritative
+                properties:
+                  urlAuthoritative:
+                    title: URL
+                    description: Link to the authoritative definition.
+                    type: string
+                    ui:field: UrlPicker
+                  typeAuthoritative:
+                    title: Type
+                    description: Type of the authoritative definition.
+                    type: string
+            schemaTags:
+              title: Tags
+              type: array
+              default: []
+              description: A list of tags that may be assigned to the element
+              items:
+                type: string
+            dataGranularityDescription:
+              title: Data Granularity Description
+              type: string
+              description: Granular level of the data in the object.
+
+        property:
+          type: object
+          ui:options:
+            displayTitle: false
+          allOf:
+            - $ref: "#/definitions/element"
+            - properties:
+                primaryKey:
+                  title: Primary Key
+                  type: boolean
+                  default: false
+                requiredProperty:
+                  title: The property may contain Null values.
+                  type: boolean
+                  default: false
+                unique:
+                  title: The property contains unique values.
+                  type: boolean
+                  default: false
+                classification:
+                  title: Classification
+                  description: The classification of the property for more advanced categorization.
+                  type: string
+                encryptedName:
+                  title: Encrypted Name
+                  description: The property name within the dataset that contains the encrypted property value. For example, unencrypted property *email_address* might have an *encryptedName* of *email_address_encrypt*.
+                  type: string
+                transformSourceObjects:
+                  title: Transform Source Objects
+                  type: array
+                  default: []
+                  items:
+                    type: string
+                examples:
+                  title: Examples
+                  type: array
+                  description: List of sample property values.
+                  default: []
+                  items:
+                    type: string
+                criticalDataElement:
+                  title: The property is considered a critical data element (CDE).
+                  type: boolean
+                  default: false
+                  ui:widget: checkbox
+                logicalType:
+                  title: Logical Type
+                  type: string
+                  description: The logical field datatype.
+                  enum:
+                    - string
+                    - date
+                    - number
+                    - integer
+                    - boolean
+                    # - array
+                  default: null
+                # columnCustomProperties:
+                #   title: Custom Properties
+                #   type: array
+                #   description: Custom properties that are not part of the standard.
+                #   default: []
+                #   items:
+                #     type: object
+                #     ui:options:
+                #       displayTitle: false
+                #     properties:
+                #       customProperty:
+                #         title: Property
+                #         type: string
+                #         description: The name of the key. Names should be in camel case the same as if they were permanent properties in the contract.
+                #       customValue:
+                #         title: Value
+                #         type: string
+                #         description: The value of the key.
+
+            - allOf:
+                - if:
+                    properties:
+                      primaryKey:
+                        const: true
+                  then:
+                    properties:
+                      primaryKeyPosition:
+                        type: integer
+                        title: Primary Key Position
+                        description: If field is a primary key, the position of the primary key property. Starts from 1. Example of *account_id*, *name* being primary key columns, *account_id* has primaryKeyPosition 1 and *name* primaryKeyPosition 2.
+                        default: -1
+
+                - if:
+                    properties:
+                      logicalType:
+                        const: array
+                  then:
+                    properties:
+                      logicalTypeOptions:
+                        type: object
+                        title: Logical Type Options
+                        properties:
+                          maxItems:
+                            title: Max Items
+                            type: integer
+                            description: Specifies the maximum number of items allowed in the array.
+                          minItems:
+                            title: Min Items
+                            type: integer
+                            description: Specifies the minimum number of items allowed in the array.
+                          uniqueItems:
+                            title: Unique Items
+                            type: boolean
+                            description: Specifies whether all items in the array must be unique.
+                            default: false
+                          items:
+                            title: Items
+                            type: array
+                            description: Schema definition for the items in the array.
+                            default: []
+                            items:
+                              type: object
+                              ui:options:
+                                displayTitle: false
+                              $ref: "#/definitions/property"
+
+                - if:
+                    properties:
+                      logicalType:
+                        const: date
+                  then:
+                    properties:
+                      logicalTypeOptions:
+                        type: object
+                        title: Logical Type Options
+                        properties:
+                          dataFormat:
+                            title: Format
+                            type: string
+                            description: Specifies the format of the date.
+                            enum:
+                              - yyyy-MM-dd
+                              - yyyy-MM-ddTHH:mm:ssZ
+                              - HH:mm:ss
+                          dataRanges:
+                            title: Data Ranges
+                            type: string
+                            enum:
+                              - exclusiveMaximum
+                              - exclusiveMinimum
+                              - maximum
+                              - minimum
+
+                - if:
+                    properties:
+                      logicalType:
+                        enum: [number, integer]
+                  then:
+                    properties:
+                      logicalTypeOptions:
+                        type: object
+                        title: Logical Type Options
+                        properties:
+                          numberFormat:
+                            title: Format
+                            type: string
+                            description: Format of the value in terms of how many bits of space it can use and whether it is signed or unsigned.
+                          numberRanges:
+                            title: Number Ranges
+                            type: string
+                            enum:
+                              - exclusiveMaximum
+                              - exclusiveMinimum
+                              - maximum
+                              - minimum
+                          multipleOf:
+                            title: Multiple Of
+                            type: number
+                            description: Values must be multiples of this number.
+
+                - if:
+                    properties:
+                      logicalType:
+                        const: string
+                  then:
+                    properties:
+                      logicalTypeOptions:
+                        type: object
+                        title: Logical Type Options
+                        properties:
+                          stringFormat:
+                            title: Format
+                            type: string
+                            description: Provides extra context about what format the string follows.
+                            enum:
+                              - email
+                              - password
+                              - byte
+                              - binary
+                              - hostname
+                              - ipv4
+                              - ipv6
+                              - uri
+                              - uuid
+                          stringPatterns:
+                            title: Patterns
+                            type: string
+                            description: Regular expression pattern to define valid values.
+                          maxLength:
+                            title: Max Length
+                            type: integer
+                            description: The maximum length of the string.
+                          minLength:
+                            title: Min Length
+                            type: integer
+                            description: The minimum length of the string.
+
+    - title: Data Quality
+      description: Data Quality Expectations for BITOL data contracts
+      type: object
+      properties:
+        qualitiesInfo:
+          title: Data Quality Information
+          type: array
+          description: Select the table name and/or enter the column name corresponding to the element where you want to add the qualities. **Do not enter the same table or column name more than once.**
+          default: []
+          items:
+            type: object
+            ui:options:
+              displayTitle: false
+            required:
+              - nameTable
+            properties:
+              nameTable:
+                title: Name table
+                description: Name of the table
+                type: object
+                ui:field: DescriptorPicker
+                sourceType: field
+                source: tables
+                optionsAt: elements
+                optionsDisplayNameAt: elementName
+              nameColumn:
+                title: Name column
+                description: Name of the property/column
+                type: string
+                default: ""
+              objQualities:
+                type: object
+                ui:options:
+                  displayTitle: false
+                properties:
+                  qualities:
+                    title: Quality
+                    description: Data Quality Expectations
+                    type: array
+                    default: []
+                    items:
+                      type: object
+                      ui:options:
+                        displayTitle: false
+                      properties:
+                        nameQuality:
+                          title: Name quality
+                          type: string
+                          description: Name of the Data Quality Expectation
+                        descriptionQuality:
+                          title: Description
+                          type: string
+                          description: Description of the Data Quality Expectation
+                        typeQuality:
+                          title: Type
+                          type: string
+                          description: Type of Data Quality Expectation
+                          enum:
+                            - text
+                            - sql
+                            - custom
+                        dimension:
+                          title: Dimension
+                          type: string
+                          description: The dimension being evaluated for data quality.
+                          enum:
+                            - accuracy
+                            - completeness
+                            - conformity
+                            - consistency
+                            - coverage
+                            - timeliness
+                            - uniqueness
+                        severity:
+                          title: Severity
+                          type: string
+                          description: The severity level of the data quality rule.
+                        businessImpact:
+                          title: Business Impact
+                          type: string
+                          description: Consequences of the rule failure.
+                        # qualityCustomProperties:
+                        #   title: Custom Properties
+                        #   type: array
+                        #   description: Custom properties that are not part of the standard.
+                        #   default: []
+                        #   items:
+                        #     type: object
+                        #     ui:options:
+                        #       displayTitle: false
+                        #     properties:
+                        #       customProperty:
+                        #         title: Property
+                        #         type: string
+                        #         description: The name of the key. Names should be in camel case the same as if they were permanent properties in the contract.
+                        #       customValue:
+                        #         title: Value
+                        #         type: string
+                        #         description: The value of the key.
+                        qualityTags:
+                          title: Tags
+                          description: Tags for the component
+                          type: array
+                          default: []
+                          items:
+                            type: string
+                        authoritativeDefinitionsQuality:
+                          title: Authoritative Definitions
+                          description: List of links to authoritative definitions for the data.
+                          type: array
+                          default: []
+                          items:
+                            type: object
+                            ui:options:
+                              displayTitle: false
+                            required:
+                              - urlAuthoritative
+                              - typeAuthoritative
+                            properties:
+                              urlAuthoritative:
+                                title: URL
+                                description: Link to the authoritative definition.
+                                type: string
+                                ui:field: UrlPicker
+                              typeAuthoritative:
+                                title: Type
+                                description: Type of the authoritative definition.
+                                type: string
+                        scheduler:
+                          title: Scheduler
+                          type: string
+                          description: Name of the scheduler, can be *cron* or any tool your organization support.
+                        schedule:
+                          title: Schedule
+                          type: string
+                          description: Configuration information for the scheduling tool, for *cron* a possible value is '0 20 * * *'.
+
+                      dependencies:
+                        typeQuality:
+                          oneOf:
+                            - properties:
+                                typeQuality:
+                                  const: sql
+                                propertyType:
+                                  title: Property Sql
+                                  type: object
+                                  description: The query used for the data quality expectation.
+                                  properties:
+                                    query:
+                                      title: Query
+                                      type: string
+                                      description: The query string to be used for the data quality expectation.
+                                    operator:
+                                      title: Operator
+                                      type: string
+                                      description: The operator specifies the condition to validate the rule.
+                                      enum:
+                                        - mustBe
+                                        - mustNotBe
+                                        - mustBeGreaterThan
+                                        - mustBeGreaterOrEqualT
+                                        - mustBeLessThan
+                                        - mustBeLessOrEqualTo
+                                        - mustBeBetween
+                                        - mustNotBeBetween
+                            - properties:
+                                typeQuality:
+                                  const: text
+                                properties: {}
+                            - properties:
+                                typeQuality:
+                                  const: custom
+                                propertyType:
+                                  title: Property Custom
+                                  type: object
+                                  description: The text used for the data quality expectation.
+                                  properties:
+                                    engine:
+                                      title: Engine
+                                      type: string
+                                      description: The name of the third-party engine being used.
+                                      enum:
+                                        - great expectations
+
+                                  dependencies:
+                                    engine:
+                                      oneOf:
+                                        - properties:
+                                            engine:
+                                              const: great expectations
+                                            greatExpectations:
+                                              title: Expectations Suite
+                                              type: object
+                                              description: Suite of expectations for Great Expectations engine.
+                                              properties:
+                                                expectationsSuite:
+                                                  title: Define your suite of expectations
+                                                  type: array
+                                                  ui:ArrayFieldTemplate: ArrayTableTemplate
+                                                  default: []
+                                                  items:
+                                                    type: object
+                                                    ui:options:
+                                                      displayTitle: false
+                                                    ui:ObjectFieldTemplate: TableRowTemplate
+                                                    required:
+                                                      - expectation_type
+                                                    properties:
+                                                      expectation_type:
+                                                        title: Expectation type
+                                                        type: string
+                                                        default: ""
+                                                        enum:
+                                                          - expect_column_values_to_be_null
+                                                          - expect_column_values_to_not_be_null
+                                                          - expect_column_max_to_be_between
+                                                          - expect_column_min_to_be_between
+                                                          - expect_column_stdev_to_be_between
+                                                          - expect_column_values_to_be_in_set
+                                                          - expect_column_values_to_not_be_in_set
+                                                          - expect_column_values_to_match_regex
+                                                          - expect_column_values_to_not_match_regex
+                                                        enumNames:
+                                                          - ExpectColumnValuesToBeNull
+                                                          - ExpectColumnValuesToNotBeNull
+                                                          - ExpectColumnMaxToBeBetween
+                                                          - ExpectColumnMinToBeBetween
+                                                          - ExpectColumnStdevToBeBetween
+                                                          - ExpectColumnValuesToBeInSet
+                                                          - ExpectColumnValuesToNotBeInSet
+                                                          - ExpectColumnValuesToMatchRegex
+                                                          - ExpectColumnValuesToNotMatchRegex
+                                                    allOf:
+                                                      - if:
+                                                          properties:
+                                                            expectation_type:
+                                                              oneOf:
+                                                                - const: expect_column_values_to_be_null
+                                                                - const: expect_column_values_to_not_be_null
+                                                        then:
+                                                          properties:
+                                                            column:
+                                                              title: Column
+                                                              type: string
+                                                              description: The column name
+                                                          required:
+                                                            - column
+                                                      - if:
+                                                          properties:
+                                                            expectation_type:
+                                                              oneOf:
+                                                                - const: expect_column_max_to_be_between
+                                                                - const: expect_column_min_to_be_between
+                                                                - const: expect_column_stdev_to_be_between
+                                                        then:
+                                                          properties:
+                                                            column:
+                                                              title: Column
+                                                              type: string
+                                                              description: The column name
+                                                            min_value:
+                                                              title: Min value
+                                                              type: number
+                                                              description: The minimum value of the acceptable range for the column
+                                                            max_value:
+                                                              title: Max value
+                                                              type: number
+                                                              description: The maximum value of the acceptable range for the column
+                                                            strict_min:
+                                                              title: Strict min
+                                                              type: boolean
+                                                              description: If True, the lower bound of the column acceptable range must be strictly larger than min_value, default=False
+                                                            strict_max:
+                                                              title: Strict max
+                                                              type: boolean
+                                                              description: If True, the upper bound of the column acceptable range must be strictly smaller than max_value, default=False
+                                                          required:
+                                                            - column
+                                                            - min_value
+                                                            - max_value
+                                                      - if:
+                                                          properties:
+                                                            expectation_type:
+                                                              oneOf:
+                                                                - const: expect_column_values_to_be_in_set
+                                                                - const: expect_column_values_to_not_be_in_set
+                                                        then:
+                                                          properties:
+                                                            column:
+                                                              title: Column
+                                                              type: string
+                                                              description: The column name
+                                                            value_set:
+                                                              title: Value Set
+                                                              description: A set of objects used for comparison
+                                                              type: array
+                                                              minItems: 1
+                                                              items:
+                                                                type: string
+                                                          required:
+                                                            - column
+                                                            - value_set
+                                                      - if:
+                                                          properties:
+                                                            expectation_type:
+                                                              oneOf:
+                                                                - const: expect_column_values_to_match_regex
+                                                                - const: expect_column_values_to_not_match_regex
+                                                        then:
+                                                          properties:
+                                                            column:
+                                                              title: Column
+                                                              type: string
+                                                              description: The column name
+                                                            regex:
+                                                              title: Regex
+                                                              type: string
+                                                              description: The regular expression the column entries should match
+                                                          required:
+                                                            - column
+                                                            - regex
+
+    - title: Support and Communication Channel
+      description: Support and Communication Channel information
+      type: object
+      properties:
+        supports:
+          title: Support Channel
+          type: array
+          default: []
+          items:
+            type: object
+            ui:options:
+              displayTitle: false
+            required:
+              - channel
+              - urlChannel
+            properties:
+              channel:
+                title: Channel
+                type: string
+                description: Link to the support or communication channel.
+              urlChannel:
+                title: URL
+                type: string
+                description: Link to the support or communication channel.
+                ui:field: UrlPicker
+              descriptionChannel:
+                title: Description
+                type: string
+                description: A short description of the support or communication channel.
+              scope:
+                title: Scope
+                type: string
+                description: The scope of the support or communication channel.
+                enum:
+                  - interactive
+                  - announcements
+                  - issues
+              invitationUrl:
+                title: Invitation URL
+                type: string
+                description: The URL for inviting users to the support or communication channel.
+                ui:field: UrlPicker
+              tools:
+                title: Tools
+                type: string
+                description: Name of the tool
+                enum:
+                  - slack
+                  - teams
+                  - email
+                  - discord
+                  - ticket
+                  - other
+                default: null
+
+            if:
+              properties:
+                tools:
+                  const: other
+            then:
+              properties:
+                otherTools:
+                  title: Other Tools
+                  type: string
+                  description: The name of the other tool being used.
+            else:
+              properties: {}
+
+    - title: Pricing
+      description: Pricing information for the data product
+      properties:
+        priceAmount:
+          title: Price Amount
+          type: number
+          description: Subscription price per unit of measure in *priceUnit*. **The value must be float number** (e.g., 3.14).
+        priceCurrency:
+          title: Price Currency
+          type: string
+          description: Currency of the subscription price
+        priceUnit:
+          title: Price Unit
+          type: string
+          description: Unit of measure for the subscription price.
+
+    - title: Service Level Agreement (SLA)
+      description: Service Level Agreement information for the data product.
+      properties:
+        slaDefaultElement:
+          title: SLA Default Element
+          type: string
+          description: The default element for the Service Level Agreement. Element (using the element path notation) to do the checks on.
+        slaProperties:
+          title: SLA Properties
+          type: array
+          description: Properties for the Service Level Agreement.
+          default: []
+          items:
+            type: object
+            ui:options:
+              displayTitle: false
+            required:
+              - propertySLA
+              - valueSLA
+            properties:
+              propertySLA:
+                title: Property
+                type: string
+                description: Specific property in SLA, check the Data QoS periodic table. May requires units.
+              valueSLA:
+                title: Value
+                type: string
+                description: The value for the specific property in SLA. The label will change based on the property itself.
+              valueExt:
+                title: Value Extension
+                type: string
+                description: Extended agreement value. The label will change based on the property itself.
+              unitSLA:
+                title: Unit
+                type: string
+                description: Unit of measurement for the specific property in SLA.
+                enum:
+                  - d
+                  - m
+                  - y
+              elementSLA:
+                title: Element
+                description: Element(s) to check on.
+                type: string
+              driverSLA:
+                title: Driver
+                type: string
+                description: Describes the importance of the SLA property.
+                enum:
+                  - regulatory
+                  - analytics
+                  - operational
+
+    - title: Custom Properties
+      description: Custom properties for the Data Contract.
+      type: object
+      properties:
+        otherCustomProperties:
+          title: Custom Properties
+          type: array
+          description: Custom properties that are not part of the standard.
+          default: []
+          items:
+            type: object
+            ui:options:
+              displayTitle: false
+            properties:
+              customProperty:
+                title: Property
+                type: string
+                description: The name of the key. Names should be in camel case the same as if they were permanent properties in the contract.
+              customValue:
+                title: Value
+                type: string
+                description: The value of the key.
+
+    - title: Other Properties
+      description: Other properties for the Data Contract.
+      type: object
+      properties:
+        contractCreatedTs:
+          title: Contract Created Timestamp
+          type: string
+          format: date-time
+          description: The timestamp when the contract was created.
+
+  steps:
+    - id: template
+      name: Fetch Skeleton + Template
+      action: fetch:template
+      input:
+        url: ./skeleton
+        targetPath: ${{ parameters.rootDirectory }}
+        values:
+          name: ${{ parameters.name }}
+          description: ${{ parameters.description }}
+          nameDC: ${{ parameters.nameDC }}
+          purpose: ${{ parameters.descriptionDC.purpose }}
+          limitation: ${{ parameters.descriptionDC.limitation }}
+          usage: ${{ parameters.descriptionDC.usage }}
+          authoritativeDefinitionsDescription: ${{ parameters.descriptionDC.authoritativeDefinitionsDesc }}
+          descriptionCustomProperties: ${{ parameters.descriptionDC.descriptionCustomProperties }}
+          domain: ${{ parameters.domain }}
+          dataproduct: ${{ parameters.dataproduct }}
+          parentName: ${{ parameters.parentName }}
+          identifier: ${{ parameters.identifier }}
+          owner: ${{ parameters.owner }}
+          status: ${{ parameters.status }}
+          otherStatus: ${{ parameters.otherStatus }}
+          authoritativeDefinitions: ${{ parameters.authoritativeDefinitions }}
+          tenant: ${{ parameters.tenant }}
+          tags: ${{ parameters.tags }}
+          dependsOn: ${{ parameters.dependsOn }}
+
+          schemas: ${{ parameters.tables }}
+
+          qualitiesInfo: ${{ parameters.qualitiesInfo }}
+
+          supports: ${{ parameters.supports }}
+
+          priceAmount: ${{ parameters.priceAmount }}
+          priceCurrency: ${{ parameters.priceCurrency }}
+          priceUnit: ${{ parameters.priceUnit }}
+
+          slaDefaultElement: ${{ parameters.slaDefaultElement }}
+          propertiesSLA: ${{ parameters.slaProperties }}
+
+          otherCustomProperties: ${{ parameters.otherCustomProperties }}
+
+          contractCreatedTs: ${{ parameters.contractCreatedTs }}
+
+          useCaseTemplateId: urn:dmb:utm:bitol-outputport-datacontract-template:1.0.0
+          infrastructureTemplateId: urn:dmb:itm:data-contract-bitol-tech-adapter:1
+          destination: &destination 'gitlab.com?owner=AgileDMBSandbox%2F${{orgname}}%2Fmesh.repository%2F${{ parameters.domain | replace(r/domain:| |-/, "") }}%2F${{ parameters.dataproduct.split(".")[1] | replace(r/ |-/g, "") }}&repo=${{ parameters.name.split(" ") | join("") | lower }}'
+          useCaseTemplateVersion: 1.0.0
+          rootDirectory: .
+
+    - id: publish
+      name: Publish
+      action: witboostMeshComponent:publish:gitlab
+      input:
+        allowedHosts: ["gitlab.com"]
+        description: "This is ${{ parameters.name }}"
+        repoUrl: *destination
+        rootDirectory: "."
+        dataproduct: "${{ parameters.dataproduct }}"
+
+    - id: register
+      name: Register
+      action: catalog:register
+      input:
+        repoContentsUrl: "${{ steps.publish.output.repoContentsUrl }}"
+        catalogInfoPath: "/catalog-info.yaml"
+
+  output:
+    links:
+      - title: Repository
+        url: "${{ steps.publish.output.remoteUrl }}"
+      - title: Open in catalog
+        icon: catalog
+        entityRef: "${{ steps.register.output.entityRef }}"
