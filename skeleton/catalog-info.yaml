@@ -19,7 +19,7 @@ customProperties: {% for item in field %}
 
 {% macro quality(field) %}
 {% for quality in field %}
-- rule: ${{ quality.nameQuality | dump }}
+- name: ${{ quality.nameQuality | dump }}
   type: ${{ quality.typeQuality | dump }}
   description: ${{ quality.descriptionQuality | dump }}
   dimension: ${{ quality.dimension | dump }}
@@ -35,23 +35,31 @@ customProperties: {% for item in field %}
   scheduler: ${{ quality.scheduler | dump }}
   schedule: ${{ quality.schedule | dump }}
   {% if quality.typeQuality == "sql" %}
-  query: ${{ quality.query | dump }}
-  operator: ${{ quality.operator | dump }}
+  query: |
+    ${{ quality.propertyType.query }}
+  {% if "mustBe" in quality.propertyType.operators%}mustBe: ${{quality.propertyType.valueMustBe | dump }}{% endif %}
+  {% if "mustNotBe" in quality.propertyType.operators%}mustNotBe: ${{quality.propertyType.valueMustNotBe | dump }}{% endif %}
+  {% if "mustBeBetween" in quality.propertyType.operators%}mustBeBetween: [${{quality.propertyType.valueRange1Between | dump }}, ${{quality.propertyType.valueRange2Between | dump }}]{% endif %}
+  {% if "mustNotBeBetween" in quality.propertyType.operators%}mustNotBeBetween: [${{quality.propertyType.valueRange1BetweenNot | dump }}, ${{quality.propertyType.valueRange2BetweenNot | dump }}]{% endif %}
+  {% if "mustBeGreaterThan" in quality.propertyType.operators%}mustBeGreaterThan: ${{quality.propertyType.valueMustBeGreaterThan | dump }}{% endif %}
+  {% if "mustBeGreaterOrEqualTo" in quality.propertyType.operators%}mustBeGreaterOrEqualTo: ${{quality.propertyType.valueMustBeGreaterOrEqualTo | dump }}{% endif %}
+  {% if "mustBeLessThan" in quality.propertyType.operators%}mustBeLessThan: ${{quality.propertyType.valueMustBeLessThan | dump }}{% endif %}
+  {% if "mustBeLessOrEqualTo" in quality.propertyType.operators%}mustBeLessOrEqualTo: ${{quality.propertyType.valueMustBeLessOrEqualTo | dump }}{% endif %}
   {% endif %}
   {% if quality.typeQuality == "custom" %}
   engine: ${{ quality.propertyType.engine | dump }}
   {% if quality.propertyType.engine == "great expectations" %}
-  {% set array_exp = quality.propertyType.greatExpectations.expectationsSuite %}
-  implementation: | {% for item in array_exp %}
-    - expectation_type: ${{ item.expectation_type }}
-      column: ${{ item.column -}}
-      {% if item.min_value is defined %}min_value: ${{ item.min_value }}
-      {% endif -%}{% if item.max_value is defined %}max_value: ${{ item.max_value }}
-      {% endif -%}{% if item.strict_min is defined %}strict_min: ${{ item.strict_min }}
-      {% endif -%}{% if item.strict_max is defined %}strict_max: ${{ item.strict_max }}
-      {% endif -%}{% if item.value_set is defined %}value_set: ${{ item.value_set }}
-      {% endif -%}{% if item.regex is defined %}regex: ${{ item.regex }}{% endif -%}
-    {% endfor %}
+  {% set exp = quality.propertyType.greatExpectations %}
+  implementation: |
+    expectation_type: ${{ exp.expectation_type }}
+    column: ${{ exp.column }}
+    {% if exp.min_value is defined %}min_value: ${{ exp.min_value }}
+    {% endif -%}{% if exp.max_value is defined %}max_value: ${{ exp.max_value }}
+    {% endif -%}{% if exp.strict_min is defined %}strict_min: ${{ exp.strict_min }}
+    {% endif -%}{% if exp.strict_max is defined %}strict_max: ${{ exp.strict_max }}
+    {% endif -%}{% if exp.value_set[0] %}value_set: ${{ exp.value_set | dump }}
+    {% endif -%}{% if exp.regex is defined %}regex: ${{ exp.regex }}
+    {% endif -%}
   {% endif %}
   {% endif %}
 {% endfor %}
@@ -120,51 +128,62 @@ spec:
             - name: ${{ property.elementName | dump }}
               description: ${{ property.elementDescription | dump }}
               businessName: ${{ property.businessName | dump }}
-              logicalType: ${{ property.logicalType | dump }}
+              logicalType: {% if property.logicalType == "" %}null{% else %}${{ property.logicalType | dump }}{% endif %}
               ${{ authoritativeDefinitions(property.authoritativeDefinitionsSchema) | indent(14, true)}}
               tags: {% if property.schemaTags | length > 0 %}${{ property.schemaTags | dump }}{% else %}[]{% endif %}
               dataGranularityDescription: ${{ property.dataGranularityDescription | dump }}
               primaryKey: ${{ property.primaryKey | dump }}
               {% if property.primaryKey %}
               primaryKeyPosition: ${{ property.primaryKeyPosition | dump }}
+              {% else %}
+              primaryKeyPosition: -1
               {% endif %}
               requiredProperty: ${{ property.requiredProperty | dump }}
               unique: ${{ property.unique | dump }}
               classification: ${{ property.classification | dump }}
               encryptedName: ${{ property.encryptedName | dump }}
-              transformSourceObject: {% for source in property.transformSourceObject %}
+              transformSourceObjects: {% for source in property.transformSourceObjects %}
                 - ${{ source | dump }}
               {% endfor %}
               examples: {% for example in property.examples %}
                 - ${{ example | dump }}
               {% endfor %}
               criticalDataElement: ${{ property.criticalDataElement | dump }}
-              {# {% if property.logicalTypeOptions == "array" %}
-              maxItems: ${{ property.maxItems | dump }}
-              minItems: ${{ property.minItems | dump }}
-              uniqueItems: ${{ property.uniqueItems | dump }}
+              {# {% if property.logicalType == "array" %}
+              maxItems: ${{ property.logicalTypeOptions.maxItems | dump }}
+              minItems: ${{ property.logicalTypeOptions.minItems | dump }}
+              uniqueItems: ${{ property.logicalTypeOptions.uniqueItems | dump }}
               items: TODO
               {% endif %} #}
-              {% if property.logicalTypeOptions == "date" %}
-              dataFormat: ${{ property.dataFormat | dump }}
-              dataRanges: ${{ property.dataRanges | dump }}
+              {% if property.logicalType == "date" %}
+              logicalTypeOptions:
+                format: ${{ property.logicalTypeOptions.dataFormat | dump }}
+                minimum: ${{ property.logicalTypeOptions.dataMinimum | dump }}
+                maximum: ${{ property.logicalTypeOptions.dataMaximum | dump }}
+                exclusiveMinimum: ${{ property.logicalTypeOptions.dataExclusiveMinimum | dump }}
+                exclusiveMaximum: ${{ property.logicalTypeOptions.dataExclusiveMaximum | dump }}
               {% endif %}
-              {% if property.logicalTypeOptions == "number" or property.logicalTypeOptions == "integer" %}
-              numberFormat: ${{ property.numberFormat | dump }}
-              numberRanges: ${{ property.numberRanges | dump }}
-              multipleOf: ${{ property.multipleOf | dump }}
+              {% if property.logicalType == "number" or property.logicalType == "integer" %}
+              logicalTypeOptions:
+                format: ${{ property.logicalTypeOptions.numberFormat | dump }}
+                minimum: ${{ property.logicalTypeOptions.numberMinimum | dump }}
+                maximum: ${{ property.logicalTypeOptions.numberMaximum | dump }}
+                exclusiveMinimum: ${{ property.logicalTypeOptions.numberExclusiveMinimum | dump }}
+                exclusiveMaximum: ${{ property.logicalTypeOptions.numberExclusiveMaximum | dump }}
+                multipleOf: ${{ property.logicalTypeOptions.multipleOf | dump }}
               {% endif %}
-              {# {% if property.logicalTypeOptions == "object" %}
+              {# {% if property.logicalType == "object" %}
               maxProperties: ${{ property.maxProperties | dump }}
               minProperties: ${{ property.minProperties | dump }}
               required: ${{ property.required | dump }}
               TODO
               {% endif %} #}
-              {% if property.logicalTypeOptions == "string" %}
-              stringFormat: ${{ property.stringFormat | dump }}
-              stringPatterns: ${{ property.stringPatterns | dump }}
-              maxLength: ${{ property.maxLength | dump }}
-              minLength: ${{ property.minLength | dump }}
+              {% if property.logicalType == "string" %}
+              logicalTypeOptions:
+                format: ${{ property.logicalTypeOptions.stringFormat | dump }}
+                pattern: ${{ property.logicalTypeOptions.stringPatterns | dump }}
+                maxLength: ${{ property.logicalTypeOptions.maxLength | dump }}
+                minLength: ${{ property.logicalTypeOptions.minLength | dump }}
               {% endif %}
               {# custom properties #}
               {# ${{ customProperty(property.columnCustomProperties) | indent(14, true)}} #}
@@ -187,15 +206,16 @@ spec:
           {% if support.tools == "other" %}
           tools: ${{ support.otherTools | dump }}
           {% else %}
-          tools: ${{ support.tools | dump }}
+          tools: {% if support.tools == "" %}null{% else %}${{ support.tools | dump }} {% endif %}
           {% endif %}
+        {% endfor %}
       price:
         priceAmount: ${{ parameters.priceAmount | dump}}
         priceCurrency: ${{ parameters.priceCurrency | dump}}
         priceUnit: ${{ parameters.priceUnit | dump}}
       slaDefaultElement: ${{ parameters.slaDefaultElement | dump}}
       slaProperties: {% for SLSproperty in values.propertiesSLA %}
-        - property: ${{ SLSproperty.name | dump }}
+        - property: ${{ SLSproperty.propertySLA | dump }}
           value: ${{ SLSproperty.valueSLA | dump }}
           valueExt: ${{ SLSproperty.valueExt | dump }}
           unit: ${{ SLSproperty.unitSLA | dump }}
@@ -209,4 +229,3 @@ spec:
       {% endfor %}
       {% endif %}
       contractCreatedTs: ${{ values.contractCreatedTs | dump }}
-      {% endfor %}

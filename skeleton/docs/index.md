@@ -13,7 +13,7 @@
 
 ## Data Contract details
 
-| Field name                    | Example value                                      |
+| Field name                    | Value                                      |
 |:------------------------------|:---------------------------------------------------|
 | **Name**                      | ${{ values.nameDC }}                                |
 | **Description**               |                                                     |
@@ -26,16 +26,16 @@
 
 {% if values.schemas.elements | length > 0 %}
 ## Schema, properties and qualities detalis
+{% for schema in values.schemas.elements %}
 
-| Field name                             | Example value                       |{% for schema in values.schemas.elements %}
+| Field name                             | Value                       |
 |:---------------------------------------|:------------------------------------|
 | **Table name ${{ loop.index }}**                       | ${{ schema.elementName | dump }}                    |{% for qualityInfo in values.qualitiesInfo -%}
 {% if (qualityInfo.nameColumn is not defined) or (not qualityInfo.nameColumn) and qualityInfo.nameTable.label == schema.elementName -%}{% for quality in qualityInfo.objQualities.qualities %}
 | **Quality table name**                 | ${{ quality.nameQuality | dump }}                      |
 | **Quality table type**                 | ${{ quality.typeQuality | dump }}   |{% endfor -%}{% endif -%}{% endfor -%}{% for property in schema.schemaProperties %}
 | **Column name ${{ loop.index }}**                      | ${{ property.elementName | dump }}                  |
-| **Logical type**                       | ${{ property.logicalType | dump }}                      |
-{% for qualityInfo in values.qualitiesInfo -%}{% if qualityInfo.nameColumn == property.elementName and qualityInfo.nameTable.label == schema.elementName -%}{% for qualityCol in qualityInfo.objQualities.qualities -%}
+| **Logical type**                       | ${{ property.logicalType | dump }}                      |{% for qualityInfo in values.qualitiesInfo -%}{% if qualityInfo.nameColumn == property.elementName and qualityInfo.nameTable.label == schema.elementName -%}{% for qualityCol in qualityInfo.objQualities.qualities -%}
 | **Quality column name**                | ${{ qualityCol.nameQuality | dump }}                |
 | **Quality column type**                | ${{ qualityCol.typeQuality | dump }}                |{% endfor -%}{% endif -%}{% endfor -%}
 {% endfor -%}{% endfor -%}

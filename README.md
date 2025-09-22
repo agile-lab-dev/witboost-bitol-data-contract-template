@@ -6,13 +6,8 @@
 
 Designed by [Agile Lab](https://www.agilelab.it/), Witboost is a versatile platform that addresses a wide range of sophisticated data engineering challenges. It enables businesses to discover, enhance, and productize their data, fostering the creation of automated data platforms that adhere to the highest standards of data governance. Want to know more about Witboost? Check it out [here](https://www.witboost.com/) or [contact us!](https://witboost.com/contact-us).
 
-<p align="center">
-    <a href="https://bitol-io.github.io/open-data-contract-standard/latest/">
-        <img src="docs/img/bitol_logo.png" alt="bitol_data_contract" width=150 >
-    </a>
-</p>
 
-# BITOL Data Contract template
+# <img src="docs/img/bitol_logo.png" alt="logo" width="40" style="vertical-align: middle; margin-left: 10px;" /> BITOL Data Contract template
 
 - [Overview](#overview)
 - [Usage](#usage)
@@ -73,7 +68,6 @@ Introduced in **Witboost 2.3**, Skeleton Entities provide a more dynamic and use
 
 For more information, please refer to the [official documentation](https://docs.witboost.com/docs/p3_tech/p12_catalog/p12_2_skeleton_entities).
 
-The template uses this new feature. The old version of the template, that generates instead [Legacy Entities](https://docs.witboost.com/docs/p3_tech/p12_catalog/p12_2_skeleton_entities/#skeleton-vs-legacy-entities), can be found in this same repository in the branch `release/v1`.
 
 ### What's an Output Port?
 
