@@ -235,7 +235,6 @@ spec:
 
     - title: Schema
       description: Schema definition for BITOL data contracts
-      type: object
       properties:
         tables:
           type: object
@@ -250,350 +249,420 @@ spec:
                 type: object
                 ui:options:
                   displayTitle: false
-                allOf:
-                  - $ref: "#/definitions/element"
-                  - properties:
-                      maxProperties:
-                        title: Max Properties
-                        type: integer
-                        description: Specifies the maximum number of columns allowed in the table.
-                      minProperties:
-                        title: Min Properties
-                        type: integer
-                        description: Specifies the minimum number of columns allowed in the table.
-                      requiredField:
-                        title: Required
-                        type: array
-                        description: Column names that are required to exist in the table.
-                        default: []
-                        items:
+                required:
+                  - elementName
+                properties:
+                  elementName:
+                    title: Name
+                    type: string
+                    description: The name of the element
+                  elementDescription:
+                    title: Description
+                    type: string
+                    description: A description of the element.
+                  businessName:
+                    title: Business Name
+                    type: string
+                    description: The business name of the element
+                  authoritativeDefinitionsSchema:
+                    title: Authoritative Definitions
+                    description: List of links to authoritative definitions for the data.
+                    type: array
+                    default: []
+                    items:
+                      type: object
+                      ui:options:
+                        displayTitle: false
+                      required:
+                        - urlAuthoritative
+                        - typeAuthoritative
+                      properties:
+                        urlAuthoritative:
+                          title: URL
+                          description: |
+                            Link to the authoritative definition.  
+                            **Must be a valid URL.**
                           type: string
-                      schemaProperties:
-                        title: Column
+                          pattern: ^https?://[a-zA-Z0-9-_]+(\.[a-zA-Z0-9-_]+)+(/.*)?$
+                        typeAuthoritative:
+                          title: Type
+                          description: Type of the authoritative definition.
+                          type: string
+                  schemaTags:
+                    title: Tags
+                    type: array
+                    default: []
+                    description: A list of tags that may be assigned to the element
+                    items:
+                      type: string
+                  dataGranularityDescription:
+                    title: Data Granularity Description
+                    type: string
+                    description: Granular level of the data in the object.
+                  maxProperties:
+                    title: Max Properties
+                    type: integer
+                    description: Specifies the maximum number of columns allowed in the table.
+                  minProperties:
+                    title: Min Properties
+                    type: integer
+                    description: Specifies the minimum number of columns allowed in the table.
+                  requiredField:
+                    title: Required
+                    type: array
+                    description: Column names that are required to exist in the table.
+                    default: []
+                    items:
+                      type: string
+                  # tableCustomProperties:
+                  #   title: Custom Properties
+                  #   type: array
+                  #   description: Custom properties that are not part of the standard.
+                  #   default: []
+                  #   items:
+                  #     type: object
+                  #     ui:options:
+                  #       displayTitle: false
+                  #     properties:
+                  #       customProperty:
+                  #         title: Property
+                  #         type: string
+                  #         description: The name of the key. Names should be in camel case the same as if they were permanent properties in the contract.
+                  #       customValue:
+                  #         title: Value
+                  #         type: string
+                  #         description: The value of the key.
+                  schemaProperties:
+                    type: object
+                    ui:options:
+                      displayTitle: false
+                    properties:
+                      tableColumns:
+                        title: Schema
                         type: array
-                        description: Property definitions for the schema
-                        default: []
+                        ui:ArrayFieldTemplate: ArrayTableTemplate
                         items:
                           type: object
-                          ui:options:
-                            displayTitle: false
-                          $ref: "#/definitions/property"
-                      # tableCustomProperties:
-                      #   title: Custom Properties
-                      #   type: array
-                      #   description: Custom properties that are not part of the standard.
-                      #   default: []
-                      #   items:
-                      #     type: object
-                      #     ui:options:
-                      #       displayTitle: false
-                      #     properties:
-                      #       customProperty:
-                      #         title: Property
-                      #         type: string
-                      #         description: The name of the key. Names should be in camel case the same as if they were permanent properties in the contract.
-                      #       customValue:
-                      #         title: Value
-                      #         type: string
-                      #         description: The value of the key.
+                          ui:ObjectFieldTemplate: TableRowTemplate
+                          required:
+                            - elementName
+                          properties:
+                            elementName:
+                              title: Name
+                              type: string
+                              description: The name of the element
+                            elementDescription:
+                              title: Description
+                              type: string
+                              description: A description of the element.
+                            businessName:
+                              title: Business Name
+                              type: string
+                              description: The business name of the element
+                            authoritativeDefinitionsSchema:
+                              title: Authoritative Definitions
+                              description: List of links to authoritative definitions for the data.
+                              type: array
+                              default: []
+                              ui:options:
+                                displayTitle: false
+                              ui:style:
+                                minWidth: 300px
+                              items:
+                                type: object
+                                ui:options:
+                                  displayTitle: false
+                                required:
+                                  - urlAuthoritative
+                                  - typeAuthoritative
+                                properties:
+                                  urlAuthoritative:
+                                    title: URL
+                                    description: Link to the authoritative definition. **Must be a valid URL.**
+                                    type: string
+                                    pattern: ^https?://[a-zA-Z0-9-_]+(\.[a-zA-Z0-9-_]+)+(/.*)?$
+                                  typeAuthoritative:
+                                    title: Type
+                                    description: Type of the authoritative definition.
+                                    type: string
+                            schemaTags:
+                              title: Tags
+                              type: array
+                              default: []
+                              description: A list of tags that may be assigned to the element
+                              ui:options:
+                                displayTitle: false
+                              ui:style:
+                                minWidth: 300px
+                              items:
+                                type: string
+                            dataGranularityDescription:
+                              title: Data Granularity Description
+                              type: string
+                              description: Granular level of the data in the object.
+                            primaryKey:
+                              title: Primary Key
+                              type: boolean
+                              default: false
+                            requiredProperty:
+                              title: Nullable
+                              type: boolean
+                              default: false
+                            unique:
+                              title: Unique
+                              type: boolean
+                              default: false
+                            classification:
+                              title: Classification
+                              description: |
+                                The classification of the property  
+                                for more advanced categorization.
+                              type: string
+                            encryptedName:
+                              title: Encrypted Name
+                              description: |
+                                The property name within the dataset that contains the encrypted property value.  
+                                For example, unencrypted property *email_address* might have an *encryptedName*  
+                                of *email_address_encrypt*.
+                              type: string
+                            transformSourceObjects:
+                              title: Transform Source Objects
+                              description: List of objects in the data source used in the transformation.
+                              type: array
+                              default: []
+                              ui:options:
+                                displayTitle: false
+                              ui:style:
+                                minWidth: 300px
+                              items:
+                                type: string
+                            exampleValues:
+                              title: Examples
+                              type: array
+                              description: List of sample property values.
+                              default: []
+                              ui:options:
+                                displayTitle: false
+                              ui:style:
+                                minWidth: 300px
+                              items:
+                                type: string
+                            criticalDataElement:
+                              title: Critical Data Element (CDE)
+                              type: boolean
+                              default: false
+                              ui:widget: checkbox
+                            logicalType:
+                              title: Logical Type
+                              type: string
+                              description: The logical field datatype.
+                              enum:
+                                - ""
+                                - "string"
+                                - "date"
+                                - "number"
+                                - "integer"
+                                - "boolean"
+                                # - "array"
+                              default: ""
 
-      definitions:
-        element:
-          type: object
-          required:
-            - elementName
-          properties:
-            elementName:
-              title: Name
-              type: string
-              description: The name of the element
-            elementDescription:
-              title: Description
-              type: string
-              description: A description of the element.
-            businessName:
-              title: Business Name
-              type: string
-              description: The business name of the element
-            authoritativeDefinitionsSchema:
-              title: Authoritative Definitions
-              description: List of links to authoritative definitions for the data.
-              type: array
-              default: []
-              items:
-                type: object
-                ui:options:
-                  displayTitle: false
-                required:
-                  - urlAuthoritative
-                  - typeAuthoritative
-                properties:
-                  urlAuthoritative:
-                    title: URL
-                    description: Link to the authoritative definition. **Must be a valid URL.**
-                    type: string
-                    pattern: ^https?://[a-zA-Z0-9-_]+(\.[a-zA-Z0-9-_]+)+(/.*)?$
-                  typeAuthoritative:
-                    title: Type
-                    description: Type of the authoritative definition.
-                    type: string
-            schemaTags:
-              title: Tags
-              type: array
-              default: []
-              description: A list of tags that may be assigned to the element
-              items:
-                type: string
-            dataGranularityDescription:
-              title: Data Granularity Description
-              type: string
-              description: Granular level of the data in the object.
+                          allOf:
+                            - if:
+                                properties:
+                                  primaryKey:
+                                    const: true
+                              then:
+                                properties:
+                                  primaryKeyPosition:
+                                    type: integer
+                                    title: Primary Key Position
+                                    description: |
+                                      If field is a primary key, the position of the primary key property.  
+                                      Starts from 1. Example of *account_id*, *name* being primary key columns,  
+                                      *account_id* has primaryKeyPosition 1 and *name* primaryKeyPosition 2.
+                                    default: 0
+                            # - if:
+                            #     properties:
+                            #       logicalType:
+                            #         const: array
+                            #   then:
+                            #     properties:
+                            #       logicalTypeOptions:
+                            #         type: object
+                            #         title: Logical Type Options
+                            #         properties:
+                            #           maxItems:
+                            #             title: Max Items
+                            #             type: integer
+                            #             description: Specifies the maximum number of items allowed in the array.
+                            #           minItems:
+                            #             title: Min Items
+                            #             type: integer
+                            #             description: Specifies the minimum number of items allowed in the array.
+                            #           uniqueItems:
+                            #             title: Unique Items
+                            #             type: boolean
+                            #             description: Specifies whether all items in the array must be unique.
+                            #             default: false
+                            #           items:
+                            #             title: Items
+                            #             type: array
+                            #             description: Schema definition for the items in the array.
+                            #             default: []
+                            #             items:
+                            #               type: object
+                            #               ui:options:
+                            #                 displayTitle: false
+                            #               $ref: "#/definitions/property"
+                            - if:
+                                properties:
+                                  logicalType:
+                                    const: date
+                              then:
+                                properties:
+                                  logicalTypeOptions:
+                                    type: object
+                                    title: Logical Type Options
+                                    properties:
+                                      dataFormat:
+                                        title: Format
+                                        type: string
+                                        description: Specifies the format of the date.
+                                        enum:
+                                          - yyyy-MM-dd
+                                          - yyyy-MM-ddTHH:mm:ssZ
+                                          - HH:mm:ss
+                                      dataExclusiveMaximum:
+                                        title: Exclusive Maximum
+                                        type: boolean
+                                        description: |
+                                          If set to true, all values are strictly less than  
+                                          the maximum value (values < maximum).  
+                                          Otherwise, less than or equal to the maximum value (values <= maximum).
+                                        default: false
+                                      dataExclusiveMinimum:
+                                        title: Exclusive Minimum
+                                        type: boolean
+                                        description: |
+                                          If set to true, all values are strictly greater than  
+                                          the minimum value (values > minimum).  
+                                          Otherwise, greater than or equal to the minimum value (values >= minimum).
+                                        default: false
+                                      dataMaximum:
+                                        title: Maximum
+                                        type: string
+                                        description: |
+                                          All date values are less than or equal  
+                                          to this value (values <= maximum).
+                                      dataMinimum:
+                                        title: Minimum
+                                        type: string
+                                        description: |
+                                          All date values are greater than or equal  
+                                          to this value (values >= minimum).
 
-        property:
-          type: object
-          ui:options:
-            displayTitle: false
-          allOf:
-            - $ref: "#/definitions/element"
-            - properties:
-                primaryKey:
-                  title: Primary Key
-                  type: boolean
-                  default: false
-                requiredProperty:
-                  title: The property may contain Null values.
-                  type: boolean
-                  default: false
-                unique:
-                  title: The property contains unique values.
-                  type: boolean
-                  default: false
-                classification:
-                  title: Classification
-                  description: The classification of the property for more advanced categorization.
-                  type: string
-                encryptedName:
-                  title: Encrypted Name
-                  description: The property name within the dataset that contains the encrypted property value. For example, unencrypted property *email_address* might have an *encryptedName* of *email_address_encrypt*.
-                  type: string
-                transformSourceObjects:
-                  title: Transform Source Objects
-                  type: array
-                  default: []
-                  items:
-                    type: string
-                examples:
-                  title: Examples
-                  type: array
-                  description: List of sample property values.
-                  default: []
-                  items:
-                    type: string
-                criticalDataElement:
-                  title: The property is considered a critical data element (CDE).
-                  type: boolean
-                  default: false
-                  ui:widget: checkbox
-                logicalType:
-                  title: Logical Type
-                  type: string
-                  description: The logical field datatype.
-                  enum:
-                    - ""
-                    - "string"
-                    - "date"
-                    - "number"
-                    - "integer"
-                    - "boolean"
-                    # - "array"
-                  default: ""
-                # columnCustomProperties:
-                #   title: Custom Properties
-                #   type: array
-                #   description: Custom properties that are not part of the standard.
-                #   default: []
-                #   items:
-                #     type: object
-                #     ui:options:
-                #       displayTitle: false
-                #     properties:
-                #       customProperty:
-                #         title: Property
-                #         type: string
-                #         description: The name of the key. Names should be in camel case the same as if they were permanent properties in the contract.
-                #       customValue:
-                #         title: Value
-                #         type: string
-                #         description: The value of the key.
+                            - if:
+                                properties:
+                                  logicalType:
+                                    enum: [number, integer]
+                              then:
+                                properties:
+                                  logicalTypeOptions:
+                                    type: object
+                                    title: Logical Type Options
+                                    properties:
+                                      numberFormat:
+                                        title: Format
+                                        type: string
+                                        description: |
+                                          Format of the value in terms of how many bits  
+                                          of space it can use and whether it is signed or unsigned.
+                                        enum:
+                                          - i8
+                                          - i16
+                                          - i32
+                                          - i64
+                                          - i128
+                                          - isize
+                                          - u8
+                                          - u16
+                                          - u32
+                                          - u64
+                                          - u128
+                                          - usize
+                                      numberExclusiveMaximum:
+                                        title: Exclusive Maximum
+                                        type: boolean
+                                        description: |
+                                          If set to true, all values are strictly less  
+                                          than the maximum value (values < maximum).  
+                                          Otherwise, less than or equal to the maximum value (values <= maximum).
+                                        default: false
+                                      numberexclusiveMinimum:
+                                        title: Exclusive Minimum
+                                        type: boolean
+                                        description: |
+                                          If set to true, all values are strictly greater than  
+                                          the minimum value (values > minimum).  
+                                          Otherwise, greater than or equal to the minimum value (values >= minimum).
+                                        default: false
+                                      numberMaximum:
+                                        title: Maximum
+                                        type: number
+                                        description: |
+                                          All values are less than or equal  
+                                          to this value (values <= maximum).
+                                      numberMinimum:
+                                        title: Minimum
+                                        type: number
+                                        description: |
+                                          All values are greater than or equal  
+                                          to this value (values >= minimum).
+                                      multipleOf:
+                                        title: Multiple Of
+                                        type: number
+                                        description: Values must be multiples of this number.
 
-            - allOf:
-                - if:
-                    properties:
-                      primaryKey:
-                        const: true
-                  then:
-                    properties:
-                      primaryKeyPosition:
-                        type: integer
-                        title: Primary Key Position
-                        description: If field is a primary key, the position of the primary key property. Starts from 1. Example of *account_id*, *name* being primary key columns, *account_id* has primaryKeyPosition 1 and *name* primaryKeyPosition 2.
-                        default: 0
-                # - if:
-                #     properties:
-                #       logicalType:
-                #         const: array
-                #   then:
-                #     properties:
-                #       logicalTypeOptions:
-                #         type: object
-                #         title: Logical Type Options
-                #         properties:
-                #           maxItems:
-                #             title: Max Items
-                #             type: integer
-                #             description: Specifies the maximum number of items allowed in the array.
-                #           minItems:
-                #             title: Min Items
-                #             type: integer
-                #             description: Specifies the minimum number of items allowed in the array.
-                #           uniqueItems:
-                #             title: Unique Items
-                #             type: boolean
-                #             description: Specifies whether all items in the array must be unique.
-                #             default: false
-                #           items:
-                #             title: Items
-                #             type: array
-                #             description: Schema definition for the items in the array.
-                #             default: []
-                #             items:
-                #               type: object
-                #               ui:options:
-                #                 displayTitle: false
-                #               $ref: "#/definitions/property"
-                - if:
-                    properties:
-                      logicalType:
-                        const: date
-                  then:
-                    properties:
-                      logicalTypeOptions:
-                        type: object
-                        title: Logical Type Options
-                        properties:
-                          dataFormat:
-                            title: Format
-                            type: string
-                            description: Specifies the format of the date.
-                            enum:
-                              - yyyy-MM-dd
-                              - yyyy-MM-ddTHH:mm:ssZ
-                              - HH:mm:ss
-                          dataExclusiveMaximum:
-                            title: Exclusive Maximum
-                            type: boolean
-                            description: If set to true, all values are strictly less than the maximum value (values < maximum). Otherwise, less than or equal to the maximum value (values <= maximum).
-                            default: false
-                          dataExclusiveMinimum:
-                            title: Exclusive Minimum
-                            type: boolean
-                            description: If set to true, all values are strictly greater than the minimum value (values > minimum). Otherwise, greater than or equal to the minimum value (values >= minimum).
-                            default: false
-                          dataMaximum:
-                            title: Maximum
-                            type: string
-                            description: All date values are less than or equal to this value (values <= maximum).
-                          dataMinimum:
-                            title: Minimum
-                            type: string
-                            description: All date values are greater than or equal to this value (values >= minimum).
-
-                - if:
-                    properties:
-                      logicalType:
-                        enum: [number, integer]
-                  then:
-                    properties:
-                      logicalTypeOptions:
-                        type: object
-                        title: Logical Type Options
-                        properties:
-                          numberFormat:
-                            title: Format
-                            type: string
-                            description: Format of the value in terms of how many bits of space it can use and whether it is signed or unsigned.
-                            enum:
-                              - i8
-                              - i16
-                              - i32
-                              - i64
-                              - i128
-                              - isize
-                              - u8
-                              - u16
-                              - u32
-                              - u64
-                              - u128
-                              - usize
-                          numberExclusiveMaximum:
-                            title: Exclusive Maximum
-                            type: boolean
-                            description: If set to true, all values are strictly less than the maximum value (values < maximum). Otherwise, less than or equal to the maximum value (values <= maximum).
-                            default: false
-                          numberexclusiveMinimum:
-                            title: Exclusive Minimum
-                            type: boolean
-                            description: If set to true, all values are strictly greater than the minimum value (values > minimum). Otherwise, greater than or equal to the minimum value (values >= minimum).
-                            default: false
-                          numberMaximum:
-                            title: Maximum
-                            type: number
-                            description: All values are less than or equal to this value (values <= maximum).
-                          numberMinimum:
-                            title: Minimum
-                            type: number
-                            description: All values are greater than or equal to this value (values >= minimum).
-                          multipleOf:
-                            title: Multiple Of
-                            type: number
-                            description: Values must be multiples of this number.
-
-                - if:
-                    properties:
-                      logicalType:
-                        const: string
-                  then:
-                    properties:
-                      logicalTypeOptions:
-                        type: object
-                        title: Logical Type Options
-                        properties:
-                          stringFormat:
-                            title: Format
-                            type: string
-                            description: Provides extra context about what format the string follows.
-                            enum:
-                              - email
-                              - password
-                              - byte
-                              - binary
-                              - hostname
-                              - ipv4
-                              - ipv6
-                              - uri
-                              - uuid
-                          stringPatterns:
-                            title: Patterns
-                            type: string
-                            description: Regular expression pattern to define valid values.
-                          maxLength:
-                            title: Max Length
-                            type: integer
-                            description: The maximum length of the string.
-                          minLength:
-                            title: Min Length
-                            type: integer
-                            description: The minimum length of the string.
+                            - if:
+                                properties:
+                                  logicalType:
+                                    const: string
+                              then:
+                                properties:
+                                  logicalTypeOptions:
+                                    type: object
+                                    title: Logical Type Options
+                                    properties:
+                                      stringFormat:
+                                        title: Format
+                                        type: string
+                                        description: |
+                                          Provides extra context about  
+                                          what format the string follows.
+                                        enum:
+                                          - email
+                                          - password
+                                          - byte
+                                          - binary
+                                          - hostname
+                                          - ipv4
+                                          - ipv6
+                                          - uri
+                                          - uuid
+                                      stringPatterns:
+                                        title: Patterns
+                                        type: string
+                                        description: |
+                                          Regular expression pattern  
+                                          to define valid values.
+                                      maxLength:
+                                        title: Max Length
+                                        type: integer
+                                        description: The maximum length of the string.
+                                      minLength:
+                                        title: Min Length
+                                        type: integer
+                                        description: The minimum length of the string.
 
     - title: Data Quality
       description: Data Quality Expectations for BITOL data contracts
@@ -997,7 +1066,6 @@ spec:
                                                         title: Value Set
                                                         description: A set of objects used for comparison
                                                         type: array
-                                                        minItems: 1
                                                         items:
                                                           type: string
                                                     required:

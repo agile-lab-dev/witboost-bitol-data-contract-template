@@ -124,7 +124,7 @@ spec:
           maxProperties: ${{ schema.maxProperties | dump }}
           minProperties: ${{ schema.minProperties | dump }}
           required: ${{ schema.requiredField | dump }}
-          properties: {% for property in schema.schemaProperties %}
+          properties: {% for property in schema.schemaProperties.tableColumns %}
             - name: ${{ property.elementName | dump }}
               description: ${{ property.elementDescription | dump }}
               businessName: ${{ property.businessName | dump }}
@@ -145,7 +145,7 @@ spec:
               transformSourceObjects: {% for source in property.transformSourceObjects %}
                 - ${{ source | dump }}
               {% endfor %}
-              examples: {% for example in property.examples %}
+              examples: {% for example in property.exampleValues %}
                 - ${{ example | dump }}
               {% endfor %}
               criticalDataElement: ${{ property.criticalDataElement | dump }}
@@ -173,9 +173,9 @@ spec:
                 multipleOf: ${{ property.logicalTypeOptions.multipleOf | dump }}
               {% endif %}
               {# {% if property.logicalType == "object" %}
-              maxProperties: ${{ property.maxProperties | dump }}
-              minProperties: ${{ property.minProperties | dump }}
-              required: ${{ property.required | dump }}
+              maxProperties: ${{ property.logicalTypeOptions.maxProperties | dump }}
+              minProperties: ${{ property.logicalTypeOptions.minProperties | dump }}
+              required: ${{ property.logicalTypeOptions.required | dump }}
               TODO
               {% endif %} #}
               {% if property.logicalType == "string" %}
